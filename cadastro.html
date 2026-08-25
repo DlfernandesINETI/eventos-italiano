@@ -51,6 +51,11 @@
   .lista-item{ border-bottom:1px solid var(--line); padding:0.8rem 0; display:flex; justify-content:space-between; align-items:center; gap:10px; cursor:pointer; }
   .lista-item:hover{ background:var(--bg-3); }
   .lista-item:last-child{ border-bottom:none; }
+  .btn-editar{ flex-shrink:0; font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--gold); border:1px solid var(--gold-dim); border-radius:99px; padding:4px 12px; background:transparent; }
+  .btn-editar:hover{ background:var(--gold); color:var(--bg); }
+  .btn-whatsapp{ flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:var(--sage); color:var(--bg); text-decoration:none; font-size:14px; }
+  .btn-whatsapp:hover{ opacity:0.85; }
+  .lista-acoes{ display:flex; align-items:center; gap:8px; }
   .lista-nome{ font-size:14px; }
   .lista-sub{ font-size:12px; color:var(--ink-dim); }
 
@@ -80,7 +85,8 @@
     <!-- FORNECEDORES -->
     <div class="painel active" id="painel-fornecedores">
       <div class="card">
-        <h2>Novo fornecedor</h2>
+        <h2 id="fornecedor-form-titulo">Novo fornecedor</h2>
+        <input type="hidden" id="f-id">
         <div class="grid">
           <div class="field"><label>Nome</label><input id="f-nome" placeholder="Sabor & Arte Buffet"></div>
           <div class="field"><label>Categoria</label><input id="f-categoria" placeholder="Buffet"></div>
@@ -88,7 +94,8 @@
           <div class="field"><label>E-mail</label><input id="f-email" placeholder="contato@fornecedor.com"></div>
           <div class="field full"><label>Contato responsável</label><input id="f-contato" placeholder="Nome de quem atende"></div>
         </div>
-        <button class="btn" onclick="criarFornecedor()">Salvar fornecedor</button>
+        <button class="btn" onclick="salvarFornecedor()" id="btn-salvar-fornecedor">Salvar fornecedor</button>
+        <button class="btn" onclick="cancelarEdicaoFornecedor()" id="btn-cancelar-fornecedor" style="display:none; background:transparent; border:1px solid var(--line-strong); color:var(--ink-dim);">Cancelar edição</button>
         <div class="msg" id="f-msg"></div>
       </div>
 
@@ -161,6 +168,13 @@ function trocarAba(nome){
   document.getElementById("painel-" + nome).classList.add("active");
 }
 
+function botaoWhatsapp(telefone, nomeParaMensagem){
+  if(!telefone) return "";
+  const numeroLimpo = telefone.replace(/\D/g, "");
+  const msg = encodeURIComponent(`Olá, ${nomeParaMensagem}! Aqui é da Italiano Eventos.`);
+  return `<a class="btn-whatsapp" href="https://wa.me/${numeroLimpo}?text=${msg}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Falar no WhatsApp">💬</a>`;
+}
+
 function mostrarMsg(id, texto, tipo){
   const el = document.getElementById(id);
   el.textContent = texto;
@@ -169,6 +183,8 @@ function mostrarMsg(id, texto, tipo){
   setTimeout(() => { el.style.display = "none"; }, 4000);
 }
 
+let FORNECEDORES_CACHE = [];
+
 async function carregarFornecedores(){
   const loading = document.getElementById("loading-fornecedores");
   const lista = document.getElementById("lista-fornecedores");
@@ -176,12 +192,16 @@ async function carregarFornecedores(){
   try{
     const resp = await fetch(`${WEBHOOK_FORNECEDORES}?admin_token=${encodeURIComponent(ADMIN_TOKEN)}`);
     if(resp.status === 401){ throw new Error("token inválido"); }
-    const dados = await resp.json();
-    lista.innerHTML = dados.map(f => `
-      <div class="lista-item">
+    FORNECEDORES_CACHE = await resp.json();
+    lista.innerHTML = FORNECEDORES_CACHE.map((f, i) => `
+      <div class="lista-item" onclick="editarFornecedor(${i})">
         <div>
           <div class="lista-nome">${f.nome}</div>
           <div class="lista-sub">${f.categoria || "sem categoria"} · ${f.telefone || "sem telefone"}</div>
+        </div>
+        <div class="lista-acoes">
+          ${botaoWhatsapp(f.telefone, f.nome)}
+          <button class="btn-editar" onclick="event.stopPropagation(); editarFornecedor(${i})">Editar</button>
         </div>
       </div>
     `).join("") || "<div class='lista-sub'>Nenhum fornecedor cadastrado ainda.</div>";
@@ -191,9 +211,31 @@ async function carregarFornecedores(){
   loading.style.display = "none";
 }
 
-async function criarFornecedor(){
+function editarFornecedor(indice){
+  const f = FORNECEDORES_CACHE[indice];
+  document.getElementById("fornecedor-form-titulo").textContent = "Editando: " + f.nome;
+  document.getElementById("f-id").value = f.id;
+  document.getElementById("f-nome").value = f.nome || "";
+  document.getElementById("f-categoria").value = f.categoria || "";
+  document.getElementById("f-telefone").value = f.telefone || "";
+  document.getElementById("f-email").value = f.email || "";
+  document.getElementById("f-contato").value = f.contato_responsavel || "";
+  document.getElementById("btn-salvar-fornecedor").textContent = "Salvar alterações";
+  document.getElementById("btn-cancelar-fornecedor").style.display = "inline-block";
+  document.getElementById("fornecedor-form-titulo").scrollIntoView({ behavior: "smooth" });
+}
+
+function cancelarEdicaoFornecedor(){
+  document.getElementById("fornecedor-form-titulo").textContent = "Novo fornecedor";
+  ["f-id","f-nome","f-categoria","f-telefone","f-email","f-contato"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("btn-salvar-fornecedor").textContent = "Salvar fornecedor";
+  document.getElementById("btn-cancelar-fornecedor").style.display = "none";
+}
+
+async function salvarFornecedor(){
   const body = {
     admin_token: ADMIN_TOKEN,
+    fornecedor_id: document.getElementById("f-id").value || null,
     nome: document.getElementById("f-nome").value,
     categoria: document.getElementById("f-categoria").value,
     telefone: document.getElementById("f-telefone").value,
@@ -212,7 +254,7 @@ async function criarFornecedor(){
     });
     if(!resp.ok) throw new Error();
     mostrarMsg("f-msg", "Fornecedor salvo com sucesso!", "ok");
-    ["f-nome","f-categoria","f-telefone","f-email","f-contato"].forEach(id => document.getElementById(id).value = "");
+    cancelarEdicaoFornecedor();
     carregarFornecedores();
   }catch(err){
     mostrarMsg("f-msg", "Erro ao salvar. Verifique a senha ou tente novamente.", "erro");
@@ -234,6 +276,10 @@ async function carregarEventos(){
         <div>
           <div class="lista-nome">${e.evento_nome}</div>
           <div class="lista-sub">${e.cliente_nome} · ${e.local || "sem local"} · ${e.status}</div>
+        </div>
+        <div class="lista-acoes">
+          ${botaoWhatsapp(e.telefone_responsavel, e.responsavel_contrato || e.cliente_nome)}
+          <button class="btn-editar" onclick="event.stopPropagation(); editarEvento(${i})">Editar</button>
         </div>
       </div>
     `).join("") || "<div class='lista-sub'>Nenhum evento ativo.</div>";
