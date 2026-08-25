@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastro · Italiano Eventos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#142621; --bg-2:#1B322A; --bg-3:#223D33;
+    --ink:#F4EFE2; --ink-dim:#A9BBB0; --ink-faint:#718278;
+    --gold:#C9A15D; --gold-dim:#8C7745; --rose:#A8503F; --sage:#6E9678;
+    --line:rgba(244,239,226,0.10); --line-strong:rgba(244,239,226,0.20); --radius:4px;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:var(--bg); color:var(--ink); font-family:'Work Sans', sans-serif; font-size:14px; line-height:1.55; min-height:100vh; }
+  .wrap{ max-width:900px; margin:0 auto; padding:2rem 1.5rem 5rem; }
+  .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold-dim); margin-bottom:0.4rem; }
+  h1{ font-family:'Fraunces', serif; font-weight:500; font-size:26px; margin-bottom:1.5rem; }
+
+  #gate{ max-width:360px; margin:6rem auto; text-align:center; }
+  #gate input{ width:100%; background:var(--bg-2); border:1px solid var(--line-strong); border-radius:var(--radius); padding:0.7rem 0.9rem; color:var(--ink); font-size:14px; margin:1rem 0; }
+  #gate button{ width:100%; background:var(--gold); color:var(--bg); border:none; border-radius:var(--radius); padding:0.7rem; font-size:14px; font-weight:500; cursor:pointer; }
+  #gate .erro{ color:var(--rose); font-size:12.5px; margin-top:0.5rem; display:none; }
+  #app{ display:none; }
+
+  .tabs{ display:flex; gap:8px; margin-bottom:1.5rem; }
+  .tab{ background:transparent; border:1px solid var(--line-strong); color:var(--ink-dim); border-radius:99px; padding:0.5rem 1.1rem; font-size:13px; cursor:pointer; }
+  .tab.active{ background:var(--gold); border-color:var(--gold); color:var(--bg); font-weight:500; }
+
+  .painel{ display:none; }
+  .painel.active{ display:block; }
+
+  .card{ background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius); padding:1.3rem; margin-bottom:1rem; }
+  .card h2{ font-family:'Fraunces', serif; font-size:16px; font-weight:500; margin-bottom:1rem; color:var(--gold); }
+
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field.full{ grid-column:1 / -1; }
+  .field label{ font-size:11.5px; color:var(--ink-faint); font-family:'IBM Plex Mono', monospace; letter-spacing:0.03em; text-transform:uppercase; }
+  .field input, .field select{ background:var(--bg-3); border:1px solid var(--line-strong); border-radius:var(--radius); padding:0.55rem 0.7rem; color:var(--ink); font-size:13.5px; }
+
+  .btn{ background:var(--gold); color:var(--bg); border:none; border-radius:var(--radius); padding:0.6rem 1.3rem; font-size:13.5px; font-weight:500; cursor:pointer; margin-top:1rem; }
+  .btn:hover{ opacity:0.9; }
+  .msg{ font-size:12.5px; margin-top:0.6rem; display:none; }
+  .msg.ok{ color:var(--sage); }
+  .msg.erro{ color:var(--rose); }
+
+  .lista-item{ border-bottom:1px solid var(--line); padding:0.8rem 0; display:flex; justify-content:space-between; align-items:center; gap:10px; cursor:pointer; }
+  .lista-item:hover{ background:var(--bg-3); }
+  .lista-item:last-child{ border-bottom:none; }
+  .lista-nome{ font-size:14px; }
+  .lista-sub{ font-size:12px; color:var(--ink-dim); }
+
+  #loading-lista{ color:var(--ink-faint); font-family:'IBM Plex Mono', monospace; font-size:12.5px; padding:1rem 0; }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="eyebrow">Italiano Eventos</div>
+  <h1 style="font-size:22px">Área da equipe</h1>
+  <input type="password" id="token-input" placeholder="Senha da equipe" autofocus>
+  <button onclick="entrar()">Entrar</button>
+  <div class="erro" id="gate-erro">Senha incorreta.</div>
+</div>
+
+<div id="app">
+  <div class="wrap">
+    <div class="eyebrow">Italiano Eventos</div>
+    <h1>Cadastro e edição</h1>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="fornecedores" onclick="trocarAba('fornecedores')">Fornecedores</button>
+      <button class="tab" data-tab="eventos" onclick="trocarAba('eventos')">Eventos</button>
+    </div>
+
+    <!-- FORNECEDORES -->
+    <div class="painel active" id="painel-fornecedores">
+      <div class="card">
+        <h2>Novo fornecedor</h2>
+        <div class="grid">
+          <div class="field"><label>Nome</label><input id="f-nome" placeholder="Sabor & Arte Buffet"></div>
+          <div class="field"><label>Categoria</label><input id="f-categoria" placeholder="Buffet"></div>
+          <div class="field"><label>Telefone</label><input id="f-telefone" placeholder="5542988880000"></div>
+          <div class="field"><label>E-mail</label><input id="f-email" placeholder="contato@fornecedor.com"></div>
+          <div class="field full"><label>Contato responsável</label><input id="f-contato" placeholder="Nome de quem atende"></div>
+        </div>
+        <button class="btn" onclick="criarFornecedor()">Salvar fornecedor</button>
+        <div class="msg" id="f-msg"></div>
+      </div>
+
+      <div class="card">
+        <h2>Fornecedores cadastrados</h2>
+        <div id="loading-fornecedores" class="loading-txt">carregando...</div>
+        <div id="lista-fornecedores"></div>
+      </div>
+    </div>
+
+    <!-- EVENTOS -->
+    <div class="painel" id="painel-eventos">
+      <div class="card">
+        <h2>Eventos ativos — clique para editar</h2>
+        <div id="loading-eventos" class="loading-txt">carregando...</div>
+        <div id="lista-eventos"></div>
+      </div>
+
+      <div class="card" id="card-editar-evento" style="display:none;">
+        <h2 id="editar-evento-titulo">Editar evento</h2>
+        <input type="hidden" id="e-id">
+        <div class="grid">
+          <div class="field full"><label>Local</label><input id="e-local"></div>
+          <div class="field"><label>Responsável pelo contrato</label><input id="e-responsavel"></div>
+          <div class="field"><label>Telefone do responsável</label><input id="e-telefone-resp"></div>
+          <div class="field"><label>Número de convidados</label><input id="e-convidados" type="number"></div>
+          <div class="field"><label>Valor total (R$)</label><input id="e-valor" type="number" step="0.01"></div>
+          <div class="field full">
+            <label>Status</label>
+            <select id="e-status">
+              <option value="orcamento">Orçamento</option>
+              <option value="confirmado">Confirmado</option>
+              <option value="em_andamento">Em andamento</option>
+              <option value="concluido">Concluído</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn" onclick="salvarEvento()">Salvar alterações</button>
+        <div class="msg" id="e-msg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==========================================================
+   CONFIGURAÇÃO — preencha com as URLs reais dos webhooks
+   e a MESMA senha que você colocou nos dois workflows n8n
+   (TROQUE_ESTE_TOKEN_ADMIN)
+   ========================================================== */
+const WEBHOOK_FORNECEDORES = "https://n8n.inetiirati.tech/webhook/admin-fornecedores";
+const WEBHOOK_EVENTOS = "https://n8n.inetiirati.tech/webhook/admin-eventos";
+
+let ADMIN_TOKEN = "";
+
+function entrar(){
+  const valor = document.getElementById("token-input").value;
+  if(!valor){ return; }
+  ADMIN_TOKEN = valor;
+  document.getElementById("gate").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  carregarFornecedores();
+  carregarEventos();
+}
+
+function trocarAba(nome){
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === nome));
+  document.querySelectorAll(".painel").forEach(p => p.classList.remove("active"));
+  document.getElementById("painel-" + nome).classList.add("active");
+}
+
+function mostrarMsg(id, texto, tipo){
+  const el = document.getElementById(id);
+  el.textContent = texto;
+  el.className = "msg " + tipo;
+  el.style.display = "block";
+  setTimeout(() => { el.style.display = "none"; }, 4000);
+}
+
+async function carregarFornecedores(){
+  const loading = document.getElementById("loading-fornecedores");
+  const lista = document.getElementById("lista-fornecedores");
+  loading.style.display = "block";
+  try{
+    const resp = await fetch(`${WEBHOOK_FORNECEDORES}?admin_token=${encodeURIComponent(ADMIN_TOKEN)}`);
+    if(resp.status === 401){ throw new Error("token inválido"); }
+    const dados = await resp.json();
+    lista.innerHTML = dados.map(f => `
+      <div class="lista-item">
+        <div>
+          <div class="lista-nome">${f.nome}</div>
+          <div class="lista-sub">${f.categoria || "sem categoria"} · ${f.telefone || "sem telefone"}</div>
+        </div>
+      </div>
+    `).join("") || "<div class='lista-sub'>Nenhum fornecedor cadastrado ainda.</div>";
+  }catch(err){
+    lista.innerHTML = "<div class='lista-sub'>Erro ao carregar. Verifique a senha ou a configuração do webhook.</div>";
+  }
+  loading.style.display = "none";
+}
+
+async function criarFornecedor(){
+  const body = {
+    admin_token: ADMIN_TOKEN,
+    nome: document.getElementById("f-nome").value,
+    categoria: document.getElementById("f-categoria").value,
+    telefone: document.getElementById("f-telefone").value,
+    email: document.getElementById("f-email").value,
+    contato_responsavel: document.getElementById("f-contato").value
+  };
+  if(!body.nome || !body.categoria){
+    mostrarMsg("f-msg", "Preencha ao menos nome e categoria.", "erro");
+    return;
+  }
+  try{
+    const resp = await fetch(WEBHOOK_FORNECEDORES, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if(!resp.ok) throw new Error();
+    mostrarMsg("f-msg", "Fornecedor salvo com sucesso!", "ok");
+    ["f-nome","f-categoria","f-telefone","f-email","f-contato"].forEach(id => document.getElementById(id).value = "");
+    carregarFornecedores();
+  }catch(err){
+    mostrarMsg("f-msg", "Erro ao salvar. Verifique a senha ou tente novamente.", "erro");
+  }
+}
+
+let EVENTOS_CACHE = [];
+
+async function carregarEventos(){
+  const loading = document.getElementById("loading-eventos");
+  const lista = document.getElementById("lista-eventos");
+  loading.style.display = "block";
+  try{
+    const resp = await fetch(`${WEBHOOK_EVENTOS}?admin_token=${encodeURIComponent(ADMIN_TOKEN)}`);
+    if(resp.status === 401){ throw new Error("token inválido"); }
+    EVENTOS_CACHE = await resp.json();
+    lista.innerHTML = EVENTOS_CACHE.map((e, i) => `
+      <div class="lista-item" onclick="editarEvento(${i})">
+        <div>
+          <div class="lista-nome">${e.evento_nome}</div>
+          <div class="lista-sub">${e.cliente_nome} · ${e.local || "sem local"} · ${e.status}</div>
+        </div>
+      </div>
+    `).join("") || "<div class='lista-sub'>Nenhum evento ativo.</div>";
+  }catch(err){
+    lista.innerHTML = "<div class='lista-sub'>Erro ao carregar. Verifique a senha ou a configuração do webhook.</div>";
+  }
+  loading.style.display = "none";
+}
+
+function editarEvento(indice){
+  const e = EVENTOS_CACHE[indice];
+  document.getElementById("card-editar-evento").style.display = "block";
+  document.getElementById("editar-evento-titulo").textContent = "Editando: " + e.evento_nome;
+  document.getElementById("e-id").value = e.evento_id;
+  document.getElementById("e-local").value = e.local || "";
+  document.getElementById("e-responsavel").value = e.responsavel_contrato || "";
+  document.getElementById("e-telefone-resp").value = e.telefone_responsavel || "";
+  document.getElementById("e-convidados").value = e.numero_convidados || "";
+  document.getElementById("e-valor").value = e.valor_total || "";
+  document.getElementById("e-status").value = e.status;
+  document.getElementById("card-editar-evento").scrollIntoView({ behavior: "smooth" });
+}
+
+async function salvarEvento(){
+  const body = {
+    admin_token: ADMIN_TOKEN,
+    evento_id: document.getElementById("e-id").value,
+    local: document.getElementById("e-local").value || null,
+    responsavel_contrato: document.getElementById("e-responsavel").value || null,
+    telefone_responsavel: document.getElementById("e-telefone-resp").value || null,
+    numero_convidados: document.getElementById("e-convidados").value || null,
+    valor_total: document.getElementById("e-valor").value || null,
+    status: document.getElementById("e-status").value
+  };
+  try{
+    const resp = await fetch(WEBHOOK_EVENTOS, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if(!resp.ok) throw new Error();
+    mostrarMsg("e-msg", "Evento atualizado com sucesso!", "ok");
+    carregarEventos();
+  }catch(err){
+    mostrarMsg("e-msg", "Erro ao salvar. Verifique a senha ou tente novamente.", "erro");
+  }
+}
+
+document.getElementById("token-input").addEventListener("keydown", (e) => {
+  if(e.key === "Enter") entrar();
+});
+</script>
+
+</body>
+</html>
