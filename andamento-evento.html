@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Andamento do evento · Italiano Eventos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:        #142621;
+    --bg-2:      #1B322A;
+    --bg-3:      #223D33;
+    --ink:       #F4EFE2;
+    --ink-dim:   #A9BBB0;
+    --ink-faint: #718278;
+    --gold:      #C9A15D;
+    --gold-dim:  #8C7745;
+    --rose:      #A8503F;
+    --sage:      #6E9678;
+    --line:      rgba(244,239,226,0.12);
+    --line-strong: rgba(244,239,226,0.22);
+    --radius:    3px;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    font-size:15px;
+    line-height:1.6;
+    min-height:100vh;
+    background-image:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(201,161,93,0.08), transparent 60%);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; }
+  }
+
+  a{ color:var(--gold); }
+  a:focus-visible, button:focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
+
+  .wrap{
+    max-width:600px;
+    margin:0 auto;
+    padding:2.5rem 1.5rem 4rem;
+  }
+
+  /* ---------- estado de carregamento / erro ---------- */
+  #loading, #error{
+    text-align:center;
+    padding:5rem 1.5rem;
+    color:var(--ink-dim);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.02em;
+  }
+  #error{ display:none; }
+  #error .error-title{
+    font-family:'Fraunces', serif;
+    font-size:20px;
+    color:var(--ink);
+    margin-bottom:0.5rem;
+  }
+
+  #content{ display:none; }
+
+  /* ---------- header ---------- */
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--gold-dim);
+    margin-bottom:1rem;
+    opacity:0;
+    animation:rise 0.6s ease forwards;
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:clamp(28px, 7vw, 38px);
+    line-height:1.15;
+    color:var(--ink);
+    margin-bottom:0.6rem;
+    opacity:0;
+    animation:rise 0.6s ease 0.08s forwards;
+  }
+  h1 em{ font-style:italic; color:var(--gold); font-weight:500; }
+
+  .meta-line{
+    font-size:14px;
+    color:var(--ink-dim);
+    margin-bottom:2.5rem;
+    opacity:0;
+    animation:rise 0.6s ease 0.16s forwards;
+  }
+  .meta-line .sep{ color:var(--ink-faint); margin:0 8px; }
+
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(8px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  /* ---------- selo de andamento (signature element) ---------- */
+  .seal-row{
+    display:flex;
+    align-items:center;
+    gap:1.5rem;
+    background:var(--bg-2);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:1.5rem;
+    margin-bottom:2.75rem;
+    opacity:0;
+    animation:rise 0.6s ease 0.24s forwards;
+  }
+
+  .seal{ flex-shrink:0; position:relative; width:84px; height:84px; }
+  .seal svg{ width:100%; height:100%; transform:rotate(-90deg); }
+  .seal circle{ fill:none; }
+  .seal .track{ stroke:var(--line); stroke-width:3; }
+  .seal .fill{
+    stroke:var(--gold);
+    stroke-width:3;
+    stroke-linecap:round;
+    stroke-dasharray:226;
+    stroke-dashoffset:226;
+    transition:stroke-dashoffset 1.1s cubic-bezier(.4,0,.2,1) 0.4s;
+  }
+  .seal-pct{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces', serif;
+    font-size:19px;
+    color:var(--ink);
+  }
+
+  .seal-text .seal-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin-bottom:6px;
+  }
+  .seal-text .seal-desc{
+    font-size:14px;
+    color:var(--ink-dim);
+    line-height:1.5;
+  }
+  .seal-text .seal-desc strong{ color:var(--ink); font-weight:500; }
+
+  /* ---------- grupos de categoria ---------- */
+  .group{
+    margin-bottom:2.25rem;
+    opacity:0;
+    animation:rise 0.5s ease forwards;
+  }
+
+  .group-header{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    margin-bottom:0.9rem;
+    padding-bottom:0.6rem;
+    border-bottom:1px solid var(--line-strong);
+  }
+  .group-name{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:16px;
+    color:var(--gold);
+  }
+  .group-count{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--ink-faint);
+  }
+
+  .item{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    padding:0.85rem 0;
+    border-bottom:1px solid var(--line);
+  }
+  .item:last-child{ border-bottom:none; }
+
+  .item-desc{ font-size:14.5px; color:var(--ink); margin-bottom:3px; }
+  .item-vendor{
+    font-size:12.5px;
+    color:var(--ink-dim);
+  }
+  .item-vendor .vendor-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    color:var(--ink-faint);
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    margin-right:6px;
+  }
+
+  .pill{
+    flex-shrink:0;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.04em;
+    padding:4px 9px;
+    border-radius:99px;
+    border:1px solid transparent;
+    white-space:nowrap;
+    margin-top:2px;
+  }
+  .pill.confirmado{ color:var(--sage); border-color:rgba(110,150,120,0.4); background:rgba(110,150,120,0.08); }
+  .pill.pendente{ color:var(--gold); border-color:rgba(201,161,93,0.4); background:rgba(201,161,93,0.08); }
+  .pill.orcamento_solicitado{ color:var(--ink-dim); border-color:var(--line-strong); background:rgba(244,239,226,0.04); }
+  .pill.cancelado{ color:var(--rose); border-color:rgba(168,80,63,0.4); background:rgba(168,80,63,0.08); }
+
+  /* ---------- footer ---------- */
+  .footer{
+    margin-top:3rem;
+    padding-top:1.75rem;
+    border-top:1px solid var(--line-strong);
+    text-align:center;
+    opacity:0;
+    animation:rise 0.6s ease 0.5s forwards;
+  }
+  .footer p{
+    font-size:13px;
+    color:var(--ink-dim);
+    margin-bottom:0.9rem;
+  }
+  .footer .wa-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:'Work Sans', sans-serif;
+    font-size:13.5px;
+    font-weight:500;
+    color:var(--bg);
+    background:var(--gold);
+    padding:0.65rem 1.3rem;
+    border-radius:99px;
+    text-decoration:none;
+    transition:opacity 0.15s;
+  }
+  .footer .wa-btn:hover{ opacity:0.88; }
+  .footer .brand{
+    margin-top:2rem;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div id="loading">carregando o andamento do seu evento…</div>
+
+  <div id="error">
+    <div class="error-title">Não encontramos esse evento</div>
+    <p>O link pode ter expirado ou estar incompleto. Fale com a equipe da Italiano Eventos para receber o link atualizado.</p>
+  </div>
+
+  <div id="content">
+    <div class="eyebrow" id="tipo-evento-label">Casamento</div>
+    <h1 id="evento-titulo">Evento de <em>Ana &amp; Bruno</em></h1>
+    <div class="meta-line" id="evento-meta">14 de março de 2027<span class="sep">·</span>Salão Jardim</div>
+
+    <div class="seal-row">
+      <div class="seal">
+        <svg viewBox="0 0 84 84">
+          <circle class="track" cx="42" cy="42" r="36"></circle>
+          <circle class="fill" id="seal-ring" cx="42" cy="42" r="36"></circle>
+        </svg>
+        <div class="seal-pct" id="seal-pct">0%</div>
+      </div>
+      <div class="seal-text">
+        <div class="seal-label">Andamento geral</div>
+        <div class="seal-desc" id="seal-desc"><strong>0 de 0</strong> serviços confirmados até agora</div>
+      </div>
+    </div>
+
+    <div id="grupos"></div>
+
+    <div class="footer">
+      <p>Dúvidas sobre algum item? Fale direto com a equipe.</p>
+      <a class="wa-btn" id="wa-link" href="#" target="_blank" rel="noopener">
+        Falar no WhatsApp
+      </a>
+      <div class="brand">Italiano Eventos</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ==========================================================
+   CONFIGURAÇÃO
+   Troque pela URL real do webhook n8n que consulta
+   vw_ficha_evento_cliente pelo token_publico.
+   Endpoint esperado: GET {WEBHOOK_URL}?token={token}
+   Resposta esperada: JSON no formato do DEMO_DATA abaixo.
+   ========================================================== */
+const WEBHOOK_URL = "https://n8n.inetiirati.tech/webhook/evento-cliente";
+const WHATSAPP_NUMERO = "5542900000000"; // número da Italiano Eventos, formato internacional sem +
+
+const TIPO_EVENTO_LABELS = {
+  casamento: "Casamento",
+  aniversario_15_anos: "Festa de 15 anos",
+  aniversario_infantil: "Aniversário infantil",
+  formatura: "Formatura",
+  jantar_corporativo: "Jantar corporativo",
+  congresso: "Congresso",
+  outro: "Evento"
+};
+
+const STATUS_LABELS = {
+  confirmado: "confirmado",
+  pendente: "pendente",
+  orcamento_solicitado: "em orçamento",
+  cancelado: "cancelado"
+};
+
+// Dado de demonstração — usado quando não há token na URL ou o
+// webhook ainda não está configurado, só para visualizar o layout.
+const DEMO_DATA = {
+  evento_nome: "Ana & Bruno",
+  tipo_evento: "casamento",
+  data_evento: "2027-03-14",
+  horario_inicio: "18:30",
+  local: "Salão Jardim, Irati/PR",
+  itens: [
+    { categoria: "Buffet", descricao: "Buffet completo para 150 convidados", status: "confirmado", fornecedor_nome: "Sabor & Arte Buffet" },
+    { categoria: "Buffet", descricao: "Bolo e mesa de doces", status: "confirmado", fornecedor_nome: "Doce Ateliê" },
+    { categoria: "Decoração", descricao: "Decoração de salão e arranjos florais", status: "confirmado", fornecedor_nome: "Flor de Lis Decorações" },
+    { categoria: "Som e Iluminação", descricao: "Som ambiente e iluminação cênica", status: "pendente", fornecedor_nome: "Prisma Eventos" },
+    { categoria: "Som e Iluminação", descricao: "DJ para a festa", status: "orcamento_solicitado", fornecedor_nome: null },
+    { categoria: "Fotografia", descricao: "Cobertura fotográfica e vídeo", status: "confirmado", fornecedor_nome: "Estúdio Lente Viva" }
+  ]
+};
+
+function formatarData(iso){
+  if(!iso) return "";
+  const [ano, mes, dia] = iso.split("-");
+  const meses = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+  return `${parseInt(dia)} de ${meses[parseInt(mes)-1]} de ${ano}`;
+}
+
+function renderEvento(data){
+  document.getElementById("tipo-evento-label").textContent = TIPO_EVENTO_LABELS[data.tipo_evento] || "Evento";
+  document.getElementById("evento-titulo").innerHTML = `Evento de <em>${data.evento_nome}</em>`;
+
+  const metaParts = [formatarData(data.data_evento)];
+  if(data.horario_inicio) metaParts.push(data.horario_inicio.slice(0,5));
+  if(data.local) metaParts.push(data.local);
+  document.getElementById("evento-meta").innerHTML = metaParts.join('<span class="sep">·</span>');
+
+  // agrupa itens por categoria, preservando a ordem de chegada
+  const grupos = {};
+  const ordem = [];
+  (data.itens || []).forEach(item => {
+    if(!grupos[item.categoria]){ grupos[item.categoria] = []; ordem.push(item.categoria); }
+    grupos[item.categoria].push(item);
+  });
+
+  const total = (data.itens || []).length;
+  const confirmados = (data.itens || []).filter(i => i.status === "confirmado").length;
+  const pct = total > 0 ? Math.round((confirmados/total)*100) : 0;
+
+  document.getElementById("seal-pct").textContent = pct + "%";
+  document.getElementById("seal-desc").innerHTML = `<strong>${confirmados} de ${total}</strong> serviços confirmados até agora`;
+
+  // anima o anel do selo (circunferência = 2*pi*36 ≈ 226)
+  const circunferencia = 226;
+  const offset = circunferencia - (pct/100)*circunferencia;
+  requestAnimationFrame(() => {
+    document.getElementById("seal-ring").style.strokeDashoffset = offset;
+  });
+
+  const gruposEl = document.getElementById("grupos");
+  gruposEl.innerHTML = "";
+  ordem.forEach((categoria, idx) => {
+    const itens = grupos[categoria];
+    const groupDiv = document.createElement("div");
+    groupDiv.className = "group";
+    groupDiv.style.animationDelay = (0.32 + idx*0.06) + "s";
+
+    const itemsHtml = itens.map(item => `
+      <div class="item">
+        <div>
+          <div class="item-desc">${item.descricao}</div>
+          ${item.fornecedor_nome ? `<div class="item-vendor"><span class="vendor-tag">Fornecedor</span>${item.fornecedor_nome}</div>` : ""}
+        </div>
+        <span class="pill ${item.status}">${STATUS_LABELS[item.status] || item.status}</span>
+      </div>
+    `).join("");
+
+    groupDiv.innerHTML = `
+      <div class="group-header">
+        <span class="group-name">${categoria}</span>
+        <span class="group-count">${itens.length} ${itens.length === 1 ? "item" : "itens"}</span>
+      </div>
+      ${itemsHtml}
+    `;
+    gruposEl.appendChild(groupDiv);
+  });
+
+  const waMsg = encodeURIComponent(`Olá! Sou o(a) contratante do evento "${data.evento_nome}" e gostaria de tirar uma dúvida.`);
+  document.getElementById("wa-link").href = `https://wa.me/${WHATSAPP_NUMERO}?text=${waMsg}`;
+
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("content").style.display = "block";
+}
+
+function mostrarErro(){
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("error").style.display = "block";
+}
+
+async function carregar(){
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+
+  if(!token || !WEBHOOK_URL){
+    // sem token ou sem webhook configurado ainda: mostra o layout de demonstração
+    renderEvento(DEMO_DATA);
+    return;
+  }
+
+  try{
+    const resp = await fetch(`${WEBHOOK_URL}?token=${encodeURIComponent(token)}`);
+    if(!resp.ok) throw new Error("evento não encontrado");
+    const data = await resp.json();
+    renderEvento(data);
+  }catch(err){
+    mostrarErro();
+  }
+}
+
+carregar();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de operações · Italiano Eventos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:        #142621;
+    --bg-2:      #1B322A;
+    --bg-3:      #223D33;
+    --ink:       #F4EFE2;
+    --ink-dim:   #A9BBB0;
+    --ink-faint: #718278;
+    --gold:      #C9A15D;
+    --gold-dim:  #8C7745;
+    --rose:      #A8503F;
+    --sage:      #6E9678;
+    --line:      rgba(244,239,226,0.10);
+    --line-strong: rgba(244,239,226,0.20);
+    --radius:    4px;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    font-size:14px;
+    line-height:1.55;
+    min-height:100vh;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+  }
+  a{ color:var(--gold); }
+  button{ font-family:inherit; cursor:pointer; }
+  ::selection{ background:var(--gold-dim); color:var(--bg); }
+
+  .wrap{ max-width:1040px; margin:0 auto; padding:2rem 1.5rem 5rem; }
+
+  header{ display:flex; justify-content:space-between; align-items:flex-end; gap:1rem; margin-bottom:2rem; flex-wrap:wrap; }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.12em;
+    text-transform:uppercase; color:var(--gold-dim); margin-bottom:0.4rem;
+  }
+  h1{ font-family:'Fraunces', serif; font-weight:500; font-size:26px; color:var(--ink); }
+  .today{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--ink-dim); }
+
+  .stats{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:10px; margin-bottom:2rem; }
+  .stat{ background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius); padding:1rem 1.1rem; }
+  .stat-num{ font-family:'Fraunces', serif; font-size:26px; color:var(--ink); line-height:1; margin-bottom:6px; }
+  .stat-num.warn{ color:var(--gold); }
+  .stat-label{ font-size:11.5px; color:var(--ink-dim); }
+
+  .urgent-panel{
+    background:rgba(168,80,63,0.08); border:1px solid rgba(168,80,63,0.3);
+    border-radius:var(--radius); padding:1rem 1.2rem; margin-bottom:2rem;
+    display:none;
+  }
+  .urgent-panel.visible{ display:block; }
+  .urgent-title{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--rose); margin-bottom:0.7rem;
+  }
+  .urgent-item{ display:flex; justify-content:space-between; gap:12px; font-size:13px; padding:5px 0; color:var(--ink-dim); }
+  .urgent-item strong{ color:var(--ink); font-weight:500; }
+  .urgent-item .dias{ color:var(--rose); font-family:'IBM Plex Mono', monospace; font-size:11.5px; white-space:nowrap; }
+
+  .filters{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:1.25rem; }
+  .search{
+    flex:1; min-width:180px; background:var(--bg-2); border:1px solid var(--line-strong);
+    border-radius:var(--radius); padding:0.55rem 0.8rem; color:var(--ink); font-size:13.5px;
+  }
+  .search::placeholder{ color:var(--ink-faint); }
+  .search:focus{ outline:1px solid var(--gold); border-color:var(--gold); }
+  .chip{
+    background:transparent; border:1px solid var(--line-strong); color:var(--ink-dim);
+    border-radius:99px; padding:0.4rem 0.85rem; font-size:12.5px; transition:all .15s;
+  }
+  .chip:hover{ border-color:var(--gold-dim); color:var(--ink); }
+  .chip.active{ background:var(--gold); border-color:var(--gold); color:var(--bg); font-weight:500; }
+
+  .event{
+    background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius);
+    margin-bottom:8px; overflow:hidden; border-left:3px solid var(--line-strong);
+  }
+  .event.urg-alta{ border-left-color:var(--rose); }
+  .event.urg-media{ border-left-color:var(--gold); }
+  .event.urg-baixa{ border-left-color:var(--sage); }
+
+  .event-row{ display:flex; align-items:center; gap:14px; padding:0.95rem 1.1rem; cursor:pointer; }
+  .event-row:hover{ background:var(--bg-3); }
+  .event-main{ flex:1; min-width:0; }
+  .event-name{ font-size:14.5px; color:var(--ink); font-weight:500; margin-bottom:2px; }
+  .event-sub{ font-size:12px; color:var(--ink-dim); }
+  .event-tipo{
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.04em;
+    text-transform:uppercase; color:var(--gold-dim); background:rgba(201,161,93,0.08);
+    border:1px solid rgba(201,161,93,0.25); border-radius:99px; padding:3px 9px; white-space:nowrap;
+  }
+  .event-date{ font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--ink-dim); text-align:right; white-space:nowrap; }
+  .event-progress{ display:flex; align-items:center; gap:7px; white-space:nowrap; }
+  .event-progress .bar{ width:56px; height:4px; background:var(--line-strong); border-radius:2px; overflow:hidden; }
+  .event-progress .bar-fill{ height:100%; background:var(--sage); }
+  .event-progress .frac{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--ink-dim); }
+  .chevron{ color:var(--ink-faint); font-size:12px; transition:transform .2s; flex-shrink:0; }
+  .event.open .chevron{ transform:rotate(90deg); }
+
+  .event-detail{ display:none; border-top:1px solid var(--line); }
+  .event.open .event-detail{ display:block; }
+  .detail-inner{ padding:0.9rem 1.1rem 1.1rem; }
+
+  .client-block{
+    display:flex; gap:18px; flex-wrap:wrap; padding-bottom:0.8rem; margin-bottom:0.8rem;
+    border-bottom:1px solid var(--line); font-size:12.5px; color:var(--ink-dim);
+  }
+  .client-block b{ color:var(--ink); font-weight:500; }
+
+  table{ width:100%; border-collapse:collapse; }
+  thead th{
+    text-align:left; font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.06em;
+    text-transform:uppercase; color:var(--ink-faint); padding:6px 8px; border-bottom:1px solid var(--line-strong);
+  }
+  tbody td{ padding:8px; font-size:13px; color:var(--ink-dim); border-bottom:1px solid var(--line); vertical-align:top; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody td.desc{ color:var(--ink); }
+  tbody td.valor{ font-family:'IBM Plex Mono', monospace; font-size:12px; text-align:right; white-space:nowrap; }
+
+  .pill{
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.03em;
+    padding:3px 8px; border-radius:99px; border:1px solid transparent; white-space:nowrap; display:inline-block;
+  }
+  .pill.confirmado{ color:var(--sage); border-color:rgba(110,150,120,0.4); background:rgba(110,150,120,0.08); }
+  .pill.pendente{ color:var(--gold); border-color:rgba(201,161,93,0.4); background:rgba(201,161,93,0.08); }
+  .pill.orcamento_solicitado{ color:var(--ink-dim); border-color:var(--line-strong); background:rgba(244,239,226,0.04); }
+  .pill.cancelado{ color:var(--rose); border-color:rgba(168,80,63,0.4); background:rgba(168,80,63,0.08); }
+
+  .empty{ text-align:center; padding:4rem 1rem; color:var(--ink-faint); font-family:'IBM Plex Mono', monospace; font-size:12.5px; }
+
+  #loading{ text-align:center; padding:4rem; color:var(--ink-dim); font-family:'IBM Plex Mono', monospace; font-size:13px; }
+  #content{ display:none; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div id="loading">carregando painel…</div>
+
+  <div id="content">
+    <header>
+      <div>
+        <div class="eyebrow">Italiano Eventos</div>
+        <h1>Painel de operações</h1>
+      </div>
+      <div class="today" id="today"></div>
+    </header>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="urgent-panel" id="urgent-panel">
+      <div class="urgent-title">Pendências que vencem em breve</div>
+      <div id="urgent-list"></div>
+    </div>
+
+    <div class="filters">
+      <input class="search" id="search" placeholder="Buscar por evento ou cliente…">
+      <button class="chip active" data-status="todos">Todos</button>
+      <button class="chip" data-status="orcamento">Orçamento</button>
+      <button class="chip" data-status="confirmado">Confirmado</button>
+      <button class="chip" data-status="em_andamento">Em andamento</button>
+      <button class="chip" data-status="concluido">Concluído</button>
+    </div>
+
+    <div id="event-list"></div>
+    <div class="empty" id="empty-state" style="display:none;">nenhum evento encontrado com esse filtro</div>
+  </div>
+</div>
+
+<script>
+const WEBHOOK_URL = "https://n8n.inetiirati.tech/webhook/painel-equipe";
+
+const TIPO_EVENTO_LABELS = {
+  casamento: "Casamento", aniversario_15_anos: "15 anos", aniversario_infantil: "Infantil",
+  formatura: "Formatura", jantar_corporativo: "Corporativo", congresso: "Congresso", outro: "Evento"
+};
+const STATUS_EVENTO_LABELS = {
+  orcamento: "Orçamento", confirmado: "Confirmado", em_andamento: "Em andamento",
+  concluido: "Concluído", cancelado: "Cancelado"
+};
+const STATUS_ITEM_LABELS = {
+  confirmado: "confirmado", pendente: "pendente", orcamento_solicitado: "em orçamento", cancelado: "cancelado"
+};
+
+const DEMO_DATA = [
+  {
+    evento_id: "1", evento_nome: "Ana & Bruno", cliente_nome: "Ana Ferreira", cliente_telefone: "5542999990001",
+    tipo_evento: "casamento", data_evento: "2026-09-14", status_evento: "confirmado",
+    itens: [
+      { categoria: "Buffet", descricao: "Buffet completo para 150 convidados", status: "confirmado", valor: 18500, fornecedor_nome: "Sabor & Arte Buffet", fornecedor_telefone: "5542988880001" },
+      { categoria: "Decoração", descricao: "Decoração de salão e arranjos florais", status: "confirmado", valor: 6200, fornecedor_nome: "Flor de Lis Decorações", fornecedor_telefone: "5542988880002" },
+      { categoria: "Som e Iluminação", descricao: "Som ambiente e iluminação cênica", status: "pendente", valor: 4500, fornecedor_nome: "Prisma Eventos", fornecedor_telefone: "5542988880003", data_limite_confirmacao: "2026-08-25" },
+      { categoria: "Fotografia", descricao: "Cobertura fotográfica e vídeo", status: "confirmado", valor: 5200, fornecedor_nome: "Estúdio Lente Viva", fornecedor_telefone: "5542988880004" }
+    ]
+  },
+  {
+    evento_id: "2", evento_nome: "Congresso Regional de Agronegócio", cliente_nome: "Sindicato Rural de Irati", cliente_telefone: "5542999990002",
+    tipo_evento: "congresso", data_evento: "2026-09-02", status_evento: "em_andamento",
+    itens: [
+      { categoria: "Infraestrutura", descricao: "Montagem de palco e telão", status: "confirmado", valor: 9800, fornecedor_nome: "Prisma Eventos", fornecedor_telefone: "5542988880003" },
+      { categoria: "Buffet", descricao: "Coffee break para 300 pessoas", status: "orcamento_solicitado", valor: null, fornecedor_nome: null, fornecedor_telefone: null, data_limite_confirmacao: "2026-08-22" },
+      { categoria: "Segurança", descricao: "Equipe de segurança e recepção", status: "pendente", valor: 3200, fornecedor_nome: "Vigilante Norte", fornecedor_telefone: "5542988880005", data_limite_confirmacao: "2026-08-20" }
+    ]
+  },
+  {
+    evento_id: "3", evento_nome: "Débora — 15 anos", cliente_nome: "Marcos Oliveira", cliente_telefone: "5542999990003",
+    tipo_evento: "aniversario_15_anos", data_evento: "2026-11-08", status_evento: "orcamento",
+    itens: [
+      { categoria: "Buffet", descricao: "Buffet e mesa de doces para 120 convidados", status: "orcamento_solicitado", valor: null, fornecedor_nome: null, fornecedor_telefone: null },
+      { categoria: "Decoração", descricao: "Decoração temática", status: "pendente", valor: 3800, fornecedor_nome: "Flor de Lis Decorações", fornecedor_telefone: "5542988880002" }
+    ]
+  }
+];
+
+let EVENTOS = [];
+let filtroStatus = "todos";
+let filtroBusca = "";
+
+function formatarDataCurta(iso){
+  if(!iso) return "";
+  const [ano, mes, dia] = iso.split("-");
+  return `${dia}/${mes}/${ano}`;
+}
+function formatarMoeda(v){
+  if(v === null || v === undefined) return "—";
+  return "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function diasAte(iso){
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const alvo = new Date(iso + "T00:00:00");
+  return Math.round((alvo - hoje) / 86400000);
+}
+
+function calcularStats(eventos){
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const em7dias = new Date(hoje.getTime() + 7*86400000);
+  let ativos = 0, pendenciasTotal = 0, essaSemana = 0, valorConfirmadoMes = 0;
+  const mesAtual = hoje.getMonth(), anoAtual = hoje.getFullYear();
+
+  eventos.forEach(e => {
+    if(!["concluido","cancelado"].includes(e.status_evento)) ativos++;
+    const dataEv = new Date(e.data_evento + "T00:00:00");
+    if(dataEv >= hoje && dataEv <= em7dias) essaSemana++;
+    e.itens.forEach(i => {
+      if(["pendente","orcamento_solicitado"].includes(i.status)) pendenciasTotal++;
+      if(i.status === "confirmado" && i.valor && dataEv.getMonth() === mesAtual && dataEv.getFullYear() === anoAtual){
+        valorConfirmadoMes += i.valor;
+      }
+    });
+  });
+  return { ativos, pendenciasTotal, essaSemana, valorConfirmadoMes };
+}
+
+function renderStats(eventos){
+  const s = calcularStats(eventos);
+  document.getElementById("stats").innerHTML = `
+    <div class="stat"><div class="stat-num">${s.ativos}</div><div class="stat-label">Eventos ativos</div></div>
+    <div class="stat"><div class="stat-num ${s.pendenciasTotal > 0 ? 'warn' : ''}">${s.pendenciasTotal}</div><div class="stat-label">Pendências em aberto</div></div>
+    <div class="stat"><div class="stat-num">${s.essaSemana}</div><div class="stat-label">Eventos nos próx. 7 dias</div></div>
+    <div class="stat"><div class="stat-num">${formatarMoeda(s.valorConfirmadoMes)}</div><div class="stat-label">Confirmado este mês</div></div>
+  `;
+}
+
+function renderUrgentes(eventos){
+  const urgentes = [];
+  eventos.forEach(e => {
+    e.itens.forEach(i => {
+      if(["pendente","orcamento_solicitado"].includes(i.status) && i.data_limite_confirmacao){
+        const dias = diasAte(i.data_limite_confirmacao);
+        if(dias <= 7) urgentes.push({ evento: e.evento_nome, item: i.descricao, dias });
+      }
+    });
+  });
+  urgentes.sort((a,b) => a.dias - b.dias);
+
+  const panel = document.getElementById("urgent-panel");
+  if(urgentes.length === 0){ panel.classList.remove("visible"); return; }
+  panel.classList.add("visible");
+  document.getElementById("urgent-list").innerHTML = urgentes.map(u => `
+    <div class="urgent-item">
+      <span><strong>${u.evento}</strong> — ${u.item}</span>
+      <span class="dias">${u.dias <= 0 ? "vence hoje" : u.dias + " dia" + (u.dias > 1 ? "s" : "")}</span>
+    </div>
+  `).join("");
+}
+
+function urgenciaEvento(evento){
+  const dias = diasAte(evento.data_evento);
+  const temPendencia = evento.itens.some(i => ["pendente","orcamento_solicitado"].includes(i.status));
+  if(temPendencia && dias <= 14) return "urg-alta";
+  if(temPendencia && dias <= 45) return "urg-media";
+  return "urg-baixa";
+}
+
+function renderLista(){
+  const termo = filtroBusca.toLowerCase();
+  const filtrados = EVENTOS.filter(e => {
+    const passaStatus = filtroStatus === "todos" || e.status_evento === filtroStatus;
+    const passaBusca = !termo || e.evento_nome.toLowerCase().includes(termo) || e.cliente_nome.toLowerCase().includes(termo);
+    return passaStatus && passaBusca;
+  }).sort((a,b) => new Date(a.data_evento) - new Date(b.data_evento));
+
+  const listEl = document.getElementById("event-list");
+  document.getElementById("empty-state").style.display = filtrados.length === 0 ? "block" : "none";
+  listEl.innerHTML = "";
+
+  filtrados.forEach(evento => {
+    const total = evento.itens.length;
+    const confirmados = evento.itens.filter(i => i.status === "confirmado").length;
+    const pct = total > 0 ? Math.round((confirmados/total)*100) : 0;
+
+    const div = document.createElement("div");
+    div.className = "event " + urgenciaEvento(evento);
+    div.innerHTML = `
+      <div class="event-row" data-id="${evento.evento_id}">
+        <div class="event-main">
+          <div class="event-name">${evento.evento_nome}</div>
+          <div class="event-sub">${evento.cliente_nome} · ${STATUS_EVENTO_LABELS[evento.status_evento]}</div>
+        </div>
+        <span class="event-tipo">${TIPO_EVENTO_LABELS[evento.tipo_evento] || "Evento"}</span>
+        <div class="event-progress">
+          <div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div>
+          <span class="frac">${confirmados}/${total}</span>
+        </div>
+        <div class="event-date">${formatarDataCurta(evento.data_evento)}</div>
+        <span class="chevron">▸</span>
+      </div>
+      <div class="event-detail">
+        <div class="detail-inner">
+          <div class="client-block">
+            <span>Cliente: <b>${evento.cliente_nome}</b></span>
+            <span>Telefone: <b>${evento.cliente_telefone || "—"}</b></span>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Categoria</th><th>Item</th><th>Fornecedor</th><th>Status</th><th>Prazo</th><th>Valor</th></tr>
+            </thead>
+            <tbody>
+              ${evento.itens.map(i => `
+                <tr>
+                  <td>${i.categoria}</td>
+                  <td class="desc">${i.descricao}</td>
+                  <td>${i.fornecedor_nome ? `${i.fornecedor_nome}${i.fornecedor_telefone ? '<br><span style="color:var(--ink-faint);font-size:11px">'+i.fornecedor_telefone+'</span>' : ''}` : '<span style="color:var(--ink-faint)">a definir</span>'}</td>
+                  <td><span class="pill ${i.status}">${STATUS_ITEM_LABELS[i.status] || i.status}</span></td>
+                  <td>${i.data_limite_confirmacao ? formatarDataCurta(i.data_limite_confirmacao) : "—"}</td>
+                  <td class="valor">${formatarMoeda(i.valor)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    div.querySelector(".event-row").addEventListener("click", () => div.classList.toggle("open"));
+    listEl.appendChild(div);
+  });
+}
+
+function renderTudo(){
+  renderStats(EVENTOS);
+  renderUrgentes(EVENTOS);
+  renderLista();
+}
+
+document.getElementById("search").addEventListener("input", (e) => { filtroBusca = e.target.value; renderLista(); });
+document.querySelectorAll(".chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+    chip.classList.add("active");
+    filtroStatus = chip.dataset.status;
+    renderLista();
+  });
+});
+
+async function carregar(){
+  document.getElementById("today").textContent = new Date().toLocaleDateString("pt-BR", { weekday:'long', day:'numeric', month:'long' });
+
+  if(WEBHOOK_URL){
+    try{
+      const resp = await fetch(WEBHOOK_URL);
+      if(!resp.ok) throw new Error("falha ao carregar");
+      EVENTOS = await resp.json();
+    }catch(err){
+      EVENTOS = DEMO_DATA;
+    }
+  } else {
+    EVENTOS = DEMO_DATA;
+  }
+
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("content").style.display = "block";
+  renderTudo();
+}
+
+carregar();
+</script>
+
+</body>
+</html>
