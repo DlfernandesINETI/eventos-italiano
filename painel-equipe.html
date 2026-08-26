@@ -137,6 +137,8 @@
   .pill.pendente{ color:var(--gold); border-color:rgba(201,161,93,0.4); background:rgba(201,161,93,0.08); }
   .pill.orcamento_solicitado{ color:var(--ink-dim); border-color:var(--line-strong); background:rgba(244,239,226,0.04); }
   .pill.cancelado{ color:var(--rose); border-color:rgba(168,80,63,0.4); background:rgba(168,80,63,0.08); }
+  .btn-whatsapp{ display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:var(--sage); color:var(--bg); text-decoration:none; font-size:11px; margin-left:6px; vertical-align:middle; }
+  .btn-whatsapp:hover{ opacity:0.85; }
 
   .empty{ text-align:center; padding:4rem 1rem; color:var(--ink-faint); font-family:'IBM Plex Mono', monospace; font-size:12.5px; }
 
@@ -227,6 +229,13 @@ const DEMO_DATA = [
 let EVENTOS = [];
 let filtroStatus = "todos";
 let filtroBusca = "";
+
+function botaoWhatsapp(telefone, nomeParaMensagem){
+  if(!telefone) return "";
+  const numeroLimpo = telefone.replace(/\D/g, "");
+  const msg = encodeURIComponent(`Olá, ${nomeParaMensagem}! Aqui é da Italiano Eventos.`);
+  return `<a class="btn-whatsapp" href="https://wa.me/${numeroLimpo}?text=${msg}" target="_blank" rel="noopener" title="Falar no WhatsApp">💬</a>`;
+}
 
 function formatarDataCurta(iso){
   if(!iso) return "";
@@ -352,7 +361,7 @@ function renderLista(){
                 <tr>
                   <td>${i.categoria}</td>
                   <td class="desc">${i.descricao}</td>
-                  <td>${i.fornecedor_nome ? `${i.fornecedor_nome}${i.fornecedor_telefone ? '<br><span style="color:var(--ink-faint);font-size:11px">'+i.fornecedor_telefone+'</span>' : ''}` : '<span style="color:var(--ink-faint)">a definir</span>'}</td>
+                  <td>${i.fornecedor_nome ? `${i.fornecedor_nome}${botaoWhatsapp(i.fornecedor_telefone, i.fornecedor_nome)}${i.fornecedor_telefone ? '<br><span style="color:var(--ink-faint);font-size:11px">'+i.fornecedor_telefone+'</span>' : ''}` : '<span style="color:var(--ink-faint)">a definir</span>'}</td>
                   <td><span class="pill ${i.status}">${STATUS_ITEM_LABELS[i.status] || i.status}</span></td>
                   <td>${i.data_limite_confirmacao ? formatarDataCurta(i.data_limite_confirmacao) : "—"}</td>
                   <td class="valor">${formatarMoeda(i.valor)}</td>
